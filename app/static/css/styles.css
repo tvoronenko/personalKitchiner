@@ -1,0 +1,85 @@
+nav .navbar-brand
+{
+    /* size for brand */
+    font-size: xx-large;
+}
+
+/* Colors for brand */
+nav .navbar-brand .blue
+{
+    color: #537fbe;
+}
+nav .navbar-brand .red
+{
+    color: #ea433b;
+}
+nav .navbar-brand .yellow
+{
+    color: #f5b82e;
+}
+nav .navbar-brand .green
+{
+    color: #2e944b;
+}
+
+main .form-control
+{
+    /* Center form controls */
+    display: inline-block;
+
+    /* Override Bootstrap's 100% width for form controls */
+    width: auto;
+}
+
+main
+{
+    /* Scroll horizontally as needed */
+    overflow-x: auto;
+
+    /* Center contents */
+    text-align: center;
+}
+
+main img
+{
+    /* Constrain images on small screens */
+    max-width: 100%;
+}
+div.dataTables_length {
+    padding-left: 2em;
+    }
+div.dataTables_length{
+    text-align: left;
+}
+
+
+.recipe_items {
+    display: flex;
+    width: 550px;
+    justify-content: space-between;
+	flex-wrap: wrap;
+}
+
+.one_ingredient {
+	margin-left: 10px;
+	padding-bottom: 5px;
+	width: 500px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+}
+
+.ingredient_product {
+	width: 150px;
+}
+
+.bottom {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+.button-plus {
+	font-size:20px;
+	font-weight:bold;
+}

@@ -1,0 +1,329 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    List of avaliable products
+{% endblock %}
+
+{% block main %}
+<!-- Generate table -->
+<br>
+   <table id="data" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Selected</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Units</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+
+<!-- Modal dialog for adding product -->
+<div id="ModalAddForm" class="modal fade"  role="dialog" >
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Add product</h2>
+            </div>
+            <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Name</label>
+                            <input id="productName" type="text" class="form-control input-lg" name="name" value="Name">
+                    </div>
+                   <div class="form-group">
+                       <label class="control-label">Category</label>
+                        <select class="form-control selectpicker" data-live-search="true"  data-width="195px" data-size="5" id="productCategory" name="category" >
+                            <option disabled selected value>Category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.name }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Quantity</label>
+                            <input id="productQuantity" class="form-control input-lg" type="number" min=1 name="quantity" value=1 >
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Units</label>
+                        <select class="form-control selectpicker" data-live-search="true" data-width="230px" data-size="5" id="productUnits" name="units">
+                            <option disabled selected value>Units</option>
+                            {% for unit in units %}
+                                <option value="{{ unit.name }}">{{ unit.name  }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div>
+                            <button id="addProduct" class='dt-button' type="submit">Add</button>
+                            <button type="button" class='dt-button' data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                <!--</form>-->
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    var table;
+    // get id of checked checkbox
+    deleteRequest = function (){
+      var toDelete = [];
+      $.each($("input[class='checkbox']:checked"), function(){
+        toDelete.push(this.id);
+      });
+     return JSON.stringify(toDelete);
+    }
+
+    //get new quantity for all products
+    updateRequest = function (){
+      var toUpdate = [];
+      $.each($("input[class='quantity']"), function(){
+              var item = {};
+              item.id = this.id;
+              item.quantity = this.value;
+              toUpdate.push(item);
+            });
+     return JSON.stringify({"type":"change","data":toUpdate});
+    }
+    //function to draw dynamically table
+    drawTable = function () {
+      var table = $('#data').DataTable({
+          "ordering": false,
+           "dom": 'B<"top"f<"clear">><t><"bottom"ilp<"clear">>',
+          ajax: '/api/products',
+        columns: [
+          {data: null,  render: function ( data, type, row, meta ) {
+                return '<input class="checkbox" id="'+row.id+'" type="checkbox"/>';
+                     }},
+          {data:'id'},
+          {data: 'name',searchable: true},
+          {data: 'category',searchable: true},
+          {data: 'quantity', render: function ( data, type, row, meta ) {
+                return '<input id="'+row.id+'" class="quantity" type="number" min=0 value="'+data+'"></input>';
+                     }},
+          {data: 'units'},
+        ],
+         buttons: [
+            {
+                extend:    'add_product',
+                text:      '<i class="fas fa-plus"></i>',
+                titleAttr: 'Add product'
+            },
+            {
+                extend:    'update',
+                text:      '<i class="far fa-edit"></i>',
+                titleAttr: 'Submit updated quantity'
+            },
+            {
+                extend:    'delete',
+                text:      '<i class="fas fa-minus"></i>',
+                titleAttr: 'Delete products'
+            },
+            {
+                extend:    'pdf',
+                text:      '<i class="far fa-file-pdf"></i>',
+                titleAttr: 'Convert to PDF'
+            }, 
+            {
+                extend:    'excel',
+                text:      '<i class="far fa-file-excel"></i>',
+                titleAttr: 'Convert to excle'
+            }, 
+            {
+                extend:    'print',
+                text:      '<i class="fas fa-print"></i>',
+                titleAttr: 'Print products'
+            }
+        ],
+
+      });
+      table.columns( [1] ).visible( false );
+
+      return table;
+    }
+    //description of add prodcut button
+    $.fn.dataTable.ext.buttons.add_product =
+    {
+        text: 'Add',
+        className: 'dt-button',
+        attr:  {
+            id: 'showNewProductPanel',
+            'data-toggle':"modal",
+            'data-target':"#ModalAddForm"
+
+        }
+
+    };
+    // description of update button
+    $.fn.dataTable.ext.buttons.update =
+    {
+        text: 'Update',
+        className: 'dt-button',
+        attr:  {
+            id: 'submit',
+            'type':"submit",
+
+        }
+
+    };
+    //description of delete button
+    $.fn.dataTable.ext.buttons.delete =
+    {
+        text: 'Delete',
+        className: 'dt-button',
+        attr:  {
+            id: 'delete',
+        }
+
+    };
+
+
+    $(document).ready(function () {
+        table = drawTable();
+
+        // function to update quantity
+        $('#submit').click( function () {
+        fetch('/api/products', {
+          method: 'POST',
+          body:updateRequest(),
+          headers: {
+            'Content-Type': 'application/json'
+          }}).then((response) => {
+              if (response.status !== 200) {
+                $.toaster('Looks like there was a problem.', {
+                  text : 'Error'
+                })
+                return;
+              }
+              $.toaster('Succesfully updated', {
+                  text:'Message'
+                })
+              table.ajax.reload();
+              return response.json();
+            }).then((data) => {
+
+            }).catch (function(error) {
+              console.log('Request failed', error)
+            });
+        });
+
+        // function to delete products
+        $('#delete').click( function () {
+            if (deleteRequest() === "[]")
+            {
+              $.toaster('Please select product to delete', {
+                  text:'Error'
+                });
+                return false;
+            }
+            fetch('/api/products', {
+            method: 'DELETE',
+            body: deleteRequest(),
+            headers: {
+              'Content-Type': 'application/json'
+            }}).then((response) => {
+              if (response.status !== 200) {
+                $.toaster('Looks like there was a problem.', {
+                  text : 'Error'
+                })
+                return;
+              }
+              $.toaster('Succesfully deleted', {
+                  text:'Message'
+                })
+              table.ajax.reload();
+              return response.json();
+            }).then((data) => {
+
+            }).catch (function(error) {
+              console.log('Request failed', error)
+            });
+        });
+
+        // function to add product
+         $('#addProduct').click( function (){
+          var newProduct = {};
+          // validation inputs and select, they cannot be empty
+          newProduct.name = $('#productName').val();
+          if (newProduct.name == "")
+          {
+            $.toaster("Product name cannot be empty", {
+                  text:'Error'
+                });
+            return false;
+          }
+          if ($('#productQuantity').val() == "")
+          {
+            $.toaster("Quantity cannot be empty", {
+                  text:'Error'
+                });
+            return false;
+          }
+          if ($('#productCategory')[0].selectedOptions[0].value == "")
+          {
+            $.toaster("Please select category", {
+                  text:'Error'
+                });
+            return false;
+          }
+          if ($('#productUnits')[0].selectedOptions[0].value == "")
+          {
+            $.toaster("Please select units", {
+                  text:'Error'
+                });
+            return false;
+          }
+
+          if ($('#productCategory') &&  $('#productCategory')[0].selectedOptions &&  $('#productCategory')[0].selectedOptions.length > 0) {
+            newProduct.category = $('#productCategory')[0].selectedOptions[0].value;
+          }
+          newProduct.quantity = $('#productQuantity').val();
+          if ($('#productUnits') &&  $('#productUnits')[0].selectedOptions &&  $('#productUnits')[0].selectedOptions.length > 0){
+            newProduct.units = $('#productUnits')[0].selectedOptions[0].value;
+          }
+
+          fetch('/api/products', {
+            method: 'PUT',
+            body: JSON.stringify(newProduct),
+            headers: {
+              'Content-Type': 'application/json'
+            }}).then((response)=> {
+                if (response.status !== 200) {
+                    $.toaster('Looks like there was a problem.', {
+                    text : 'Error'
+                    })
+                    return;
+                }
+                $('#ModalAddForm').on('hidden.bs.modal', function () {
+                $(this).find("select").val('').end(); // Clear dropdown content
+                $('#productName').val("Name");
+                $('#productQuantity').val(1);
+                });
+
+                $('#ModalAddForm').modal('hide')
+                table.ajax.reload();
+                $.toaster('Succesfully added', {
+                    text:'Message'
+                    });
+        
+            }).then((data) => {
+                
+                
+                }).catch (() => {
+                    $.toaster('Cannot be added', {
+                    text:'Error'
+                    })});
+        });
+
+      });
+  </script>
+{% endblock %}

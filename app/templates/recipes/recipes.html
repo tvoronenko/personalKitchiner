@@ -1,0 +1,559 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    List of avaliable recipes
+{% endblock %}
+
+{% block main %}
+<br>
+   <table id="data" class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Selected</th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Ingredients</th>
+                <th>Decritpion</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+
+<!-- Modal dialog to show details about recipe  -->
+<div id="ModalShowForm" class="modal fade"  role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width:600px">
+            <div class="modal-header">
+                <h2 class="modal-title">Show recipe</h2>
+            </div>
+            <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Name</label>
+    
+                            <input id="recipetName1" type="text" class="form-control input-lg" name="name"  readonly>
+
+                    </div>
+                   <div class="form-group">
+                       <label class="control-label">Category</label>
+                            <input id="category1" type="text" class="form-control input-lg" name="category"  readonly>
+                    </div>
+
+                    <div class="form-group">
+                       <label class="control-label">Ingredients</label>
+                       <div>
+                       <textarea id="ingredients1" type="text" class="form-control input-lg" name="ingredients" cols=60 readonly> </textarea>
+						</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Descriptions:</label>
+                        <div>
+                            <textarea id="description1" type="text" class="form-control input-lg" cols=60 readonly></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div>
+                            <button type="button" class='dt-button' data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                <!--</form>-->
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<!-- Modal dialog to add recipe -->
+<div id="ModalAddForm" class="modal fade"  role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content" style="width:600px">
+            <div class="modal-header">
+                <h2 class="modal-title">Add recipe</h2>
+            </div>
+            <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label">Name</label>
+                        <input id="recipetName" type="text" class="form-control input-lg" name="name" value="Name" required>
+                    </div>
+                   <div class="form-group">
+                       <label class="control-label">Category</label>
+                        <select class="form-control selectpicker" data-live-search="true"  data-width="195px" data-size="5" id="recipeCategory" name="category" required>
+                            <option disabled selected value>Category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.name }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                       <label class="control-label">Ingredients</label>
+					   	<div id="existingIngredients">
+						</div>
+                       <div class="recipe_items" id="recipe_items" style="display: flex; flex-direction: column;">
+					   <div>
+                        <select class="form-control selectpicker" data-live-search="true"  data-width="150px" data-size="5" id="productIngred" name="productIngred" required>
+                            <option disabled selected value>Product</option>
+                            {% for product in products %}
+                                <option value="{{ product.name }}">{{ product.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input id="quantityIngred" type="number" class="form-control input-lg" name="quantityIngred" value=1 min=1 required>
+                        <select class="form-control selectpicker" data-live-search="true"  data-width="100px" data-size="5" id="unitsIngred" name="unitsIngred" required>
+                            <option disabled selected value>Units</option>
+                            {% for unit in units %}
+                                <option value="{{ unit.name }}">{{ unit.name }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <button id="addIngredient" class='dt-button' type="submit"><span class="fa fa-plus"></span></button>
+						</div>
+						</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">Descriptions:</label>
+                        <div>
+                            <textarea id="description" type="text" class="form-control input-lg" cols=60 required></textarea>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div>
+                            <button id="addRecipe" class='dt-button' type="submit">Add</button>
+                            <button type="button" class='dt-button' data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                <!--</form>-->
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    var table;
+    // get id of checked checkbox
+    deleteRequest = function (){
+        var toDelete = [];
+        $.each($("input[class='checkbox']:checked"), function(){
+            toDelete.push(this.id);
+        });
+        return JSON.stringify(toDelete);
+    }
+    // function to draw table
+    drawTable = function () {
+      var table = $('#data').DataTable({
+          "ordering": false,
+           "dom": 'B<"top"f<"clear">>t<"bottom"ilp<"clear">>',
+          ajax: '/api/recipes',
+        columns: [
+          {data: null,  render: function ( data, type, row, meta ) {
+                return '<input class="checkbox" id="'+row.id+'" type="checkbox"/>';
+                     }},
+          {data: 'id'},
+          {data: 'name',searchable: true},
+          {data: 'category',searchable: true},
+          {data: 'ingredients', render: function ( data, type, row, meta ) {
+                var ing=""
+                for (i =0; i < data.length; i++){
+                    ing=ing+data[i]["name"]+" - "+data[i]["quantity"]+" "+data[i]["units"]+"</br>";
+
+                }
+                return '<p class="text-left">'+ing+'</p>';
+                     }},
+            {data: 'description'},
+        ],
+         buttons: [
+             {
+                extend:    'add_recipe',
+                text:      '<i class="fas fa-plus"></i>',
+                titleAttr: 'Add recipe'
+            },
+            {
+                extend:    'delete',
+                text:      '<i class="fas fa-minus"></i>',
+                titleAttr: 'Delete products'
+            },
+            {
+                extend:    'cook',
+                text:      '<i class="fas fa-mortar-pestle"></i>',
+                titleAttr: 'Cook recipe and delete ingredients from products'
+            },
+            {
+                extend:    'show',
+                text:      '<i class="fas fa-info"></i>',
+                titleAttr: 'Show details abput recipe'
+            },
+            {
+                extend:    'to_list',
+                text:      '<i class="fas fa-cart-plus"></i>',
+                titleAttr: 'Add ingredients to shopping list'
+            },
+            {
+                extend:    'pdf',
+                text:      '<i class="far fa-file-pdf"></i>',
+                titleAttr: 'Convert to PDF'
+            }, 
+            {
+                extend:    'excel',
+                text:      '<i class="far fa-file-excel"></i>',
+                titleAttr: 'Convert to excle'
+            }, 
+            {
+                extend:    'print',
+                text:      '<i class="fas fa-print"></i>',
+                titleAttr: 'Print products'
+            }
+        ],
+
+      });
+      table.columns( [1] ).visible( false );
+      table.columns( [5] ).visible( false );
+
+      return table;
+    }
+    // description of add recipe button
+    $.fn.dataTable.ext.buttons.add_recipe =
+    {
+        text: 'Add',
+        action: function ( e, dt, node, config ) {
+                },
+        className: 'dt-button',
+        attr:  {
+            id: 'showNewRecipesPanel',
+            'data-toggle':"modal",
+            'data-target':"#ModalAddForm"
+
+        }
+
+    };
+    // function to show details about recipe
+    $.fn.dataTable.ext.buttons.show =
+        {
+            text: 'Show details',
+            action: function ( e, dt, node, config ) {
+                var toShow = [];
+                $.each($("input[class='checkbox']:checked"), function(){
+                    toShow.push(this.id);
+                });
+                if (toShow.length == 0 )
+                {
+                    $.toaster('Please select recipe to show details', {
+                    text:'Error'
+                    });
+                    return false;
+                }
+                if (toShow.length > 1 )
+                {
+                    $.toaster('First selected recipe will be shown', {
+                    text:'Message'
+                    });
+                }
+                $.each($('#data').DataTable().rows().data(), function(){
+                  var item = {};
+                  if (this.id == toShow[0])
+                  {
+                    $('#recipetName1').val(this.name);
+                    $('#category1').val(this.category);
+                    $('#description1').val(this.description);
+                    var d = this.ingredients
+                    var ing=""
+                    for (i =0; i < d.length; i++){
+                        ing=ing+d[i]["name"]+" - "+d[i]["quantity"]+" "+d[i]["units"]+"; ";
+
+                    };
+                    $('#ingredients1').val(ing);
+  
+                  }
+                  
+
+                });
+            },
+            className: 'dt-button',
+            attr:  {
+                id: 'showRecipesPanel',
+                'data-toggle':"modal",
+                'data-target':"#ModalShowForm"
+
+            }
+
+        };
+    // description add to shopping list button
+    $.fn.dataTable.ext.buttons.to_list =
+    {
+        text: 'Add to shopping list',
+        className: 'dt-button',
+        attr:  {
+            id: 'addToList'
+        }
+
+    };
+    //description cook recipe button and delete ingredients from stored products
+    $.fn.dataTable.ext.buttons.cook =
+    {
+        text: 'Cook recipe',
+        className: 'dt-button',
+        attr:  {
+            id: 'cook'
+        }
+
+    };
+    //description delete button
+    $.fn.dataTable.ext.buttons.delete =
+    {
+        text: 'Delete',
+        className: 'dt-button',
+        attr:  {
+            id: 'delete',
+        }
+
+    };
+
+
+    var recipe={
+		    ingredients: []
+		};
+
+    //function to show ingredients in add recipe modal dialog
+    showIngrediends = function () {
+        var parent = document.querySelector('#existingIngredients')
+        while (parent.firstChild) {
+            parent.removeChild(parent.firstChild);
+        }
+        // show in div already added ingredients and generate new input 
+        for(i=0;i<recipe.ingredients.length;i++){
+            var ingredient={};
+            ingredient.product = recipe.ingredients[i].product;
+            ingredient.quantity = recipe.ingredients[i].quantity;
+            ingredient.units = recipe.ingredients[i].units;
+
+            var child = document.createElement("div")
+            child.id="ingredient"+i
+            child.classList.add("one_ingredient");
+            var product = document.createElement("div")
+            product.id="ing-product";
+            product.innerText=ingredient.product;
+            product.classList.add("ingredient_product");
+            var quantity = document.createElement("div")
+            quantity.id="ing-product";
+            quantity.innerText=ingredient.quantity;
+            var units = document.createElement("div");
+            units.id="ing-product";
+            units.innerText=ingredient.units;
+            //generate button for deleting ingredients
+            var button = document.createElement("button");
+            button.id="removingIngred_"+ingredient.product;
+            button.onclick = (e) => {
+                deleteRow(ingredient.product);
+            };
+            var span = document.createElement("span");
+            span.className="fas fa-minus"
+            button.appendChild(span)
+            child.appendChild(product);
+            child.appendChild(quantity);
+            child.appendChild(units);
+            child.appendChild(button);
+            parent.appendChild(child);
+        }
+        }
+        //function to delete added ingredients
+        deleteRow = function(id){
+
+            var listBefore = recipe.ingredients;
+
+            var listAfter = listBefore.filter(ingr => ingr.product != id);
+
+            recipe.ingredients = listAfter;
+            showIngrediends();
+        }
+
+    $(document).ready(function () {
+        table = drawTable();
+        // send delete request
+        $('#delete').click( function () {
+            if (deleteRequest() === "[]")
+            {
+              $.toaster('Please select product to delete', {
+                  text:'Error'
+                });
+                return false;
+            }
+            fetch('/api/recipes', {
+            method: 'DELETE',
+            body: deleteRequest(),
+            headers: {
+              'Content-Type': 'application/json'
+            }}).then((response) => {
+              if (response.status !== 200) {
+                $.toaster('Looks like there was a problem.', {
+                  text : 'Error'
+                })
+                return;
+              }
+              $.toaster('Succesfully deleted', {
+                  text:'Message'
+                })
+              table.ajax.reload();
+              return response.json();
+            }).then((data) => {
+
+            }).catch (function(error) {
+              console.log('Request failed', error)
+            });
+        });
+        //sent cook request to remove ingredients from stored product
+        $('#cook').click( function () {
+            if (deleteRequest() === "[]")
+            {
+              $.toaster('Please select product to delete', {
+                  text:'Error'
+                });
+                return false;
+            }
+            fetch('/api/recipes', {
+            method: 'POST',
+            body: deleteRequest(),
+            headers: {
+              'Content-Type': 'application/json'
+            }}).then((response) => {
+              if (response.status !== 200) {
+                $.toaster('Looks like there was a problem.', {
+                  text : 'Error'
+                })
+                return;
+              }
+              $.toaster('Succesfully cooked', {
+                  text:'Message'
+                })
+            window.location="/"
+            }).then((data) => {
+
+            }).catch (function(error) {
+              console.log('Request failed', error)
+            });
+        });
+        //send add recipe request
+        $('#addRecipe').click( function (){
+            if ($('#recipetName').val() == "")
+            {
+            $.toaster("Recipe name cannot be empty", {
+                    text:'Error'
+                });
+            return false;
+            }
+
+            if ($('#description').val() == "")
+            {
+            $.toaster("Description cannot be empty", {
+                    text:'Error'
+                });
+            return false;
+            }
+            
+            if ($('#recipeCategory')[0].selectedOptions[0].value == "")
+            {
+            $.toaster("Please select category", {
+                    text:'Error'
+                });
+            return false;
+            }
+            recipe.name= $('#recipetName').val();
+            recipe.category=$('#recipeCategory')[0].selectedOptions[0].value;
+            recipe.description=$('#description').val()
+            fetch('/api/recipes', {
+            method: 'PUT',
+            body: JSON.stringify(recipe),
+            headers: {
+            'Content-Type': 'application/json'
+            }}).then((response)=> {
+                if (response.status !== 200) {
+                    $.toaster('Looks like there was a problem.', {
+                    text : 'Error'
+                    })
+                    return;
+                }
+                $('#ModalAddForm').on('hidden.bs.modal', function () {
+                $(this).find("select").val('').end(); // Clear dropdown content
+                $('#recipetName').val("Name");
+                $('#quantityIngred').val(1);
+                $('#description').val("");
+                });
+
+                $('#ModalAddForm').modal('hide')
+                table.ajax.reload();
+                $.toaster('Succesfully added', {
+                    text:'Message'
+                    });
+        
+            }).then((data) => {
+                
+                
+                }).catch (() => {
+                    $.toaster('Cannot be added', {
+                    text:'Error'
+                    })});
+        });
+        //send request to add ingredient to shopping list minus existed product 
+        $("#addToList").click(function(){
+            
+            var toAdd = [];
+              $.each($("input[class='checkbox']:checked"), function(){
+                toAdd.push(this.id);
+              });
+            if (toAdd.length === 0)
+            {
+              $.toaster('Please select recipe', {
+                  text:'Error'
+                });
+                return false;
+            }
+            window.location = "/shopping_list?ids=" + toAdd;
+        });
+
+        $('#addIngredient').click(() => {
+            if ($('#quantityIngred').val() == "")
+            {
+            $.toaster("Quantity cannot be empty", {
+                    text:'Error'
+                });
+            return false;
+            }
+            
+            if ($('#productIngred')[0].selectedOptions[0].value == "")
+            {
+            $.toaster("Please select product", {
+                    text:'Error'
+                });
+            return false;
+            }
+            if ($('#unitsIngred')[0].selectedOptions[0].value == "")
+            {
+            $.toaster("Please select units", {
+                    text:'Error'
+                });
+            return false;
+            }
+            var index=recipe.ingredients.findIndex(v => v.product === $('#productIngred')[0].selectedOptions[0].value)
+            if (index === -1)
+            {
+                var item={};
+                item.product=$('#productIngred')[0].selectedOptions[0].value;
+                item.quantity=$('#quantityIngred').val();
+                item.units=$('#unitsIngred')[0].selectedOptions[0].value;
+                recipe.ingredients.push(item);
+            }
+            else
+            {
+                recipe.ingredients[index].quantity=parseInt(recipe.ingredients[index].quantity)+parseInt($('#quantityIngred').val())
+            }
+
+            showIngrediends();
+            $('#quantityIngred').val(1);
+            $('#productIngred').val('')
+            $('#unitsIngred').val('')
+        });
+      });
+  </script>
+{% endblock %}
