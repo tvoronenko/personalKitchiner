@@ -1,13 +1,13 @@
 # Personal Kitchiner
 #### Video Demo:  <URL HERE>
 #### Description:
-This simple hybrid of shopping list and kitchen inventory system. 
-You can enter all products and beverage that you have. 
-Then you can enter favorite recipes. 
-When you decide to prepare some recipe, application will generate shopping list, keeping in mind 
-what ingredients you already have. 
+This simple hybrid of shopping list and kitchen inventory system.
+You can enter all products and beverage that you have.
+Then you can enter favorite recipes.
+When you decide to prepare some recipe, application will generate shopping list, keeping in mind
+what ingredients you already have.
 After shopping you can select add product from shopping list to your stored products.
-You can also cook some recipe, and ingredients will be removed from you storage.  
+You can also cook some recipe, and ingredients will be removed from you storage.
 
 ## Getting Started
 
@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ## Running the application
 
 You have several option to run application
-1. Got ot folder **personalKitchiner** and run 
+1. Got ot folder **personalKitchiner** and run
 ```
 python run.py
 ```
@@ -73,7 +73,7 @@ personalKitchiner/
     run.py
     requirements.txt
     README.MD
-      
+
 ```
 #### Folders auth/products/recipes/shopping_list
 Structure of these folders are similar.
@@ -82,7 +82,7 @@ They contain models and views files
 This is Domain models, that contain functions to run sql query in db
 #####  views.py
 This is controller.
-I start out by creating a blueprint. Then I then map my 
+I start out by creating a blueprint. Then I then map my
 view to routes using the normal decorator syntax.
  I have added comments around some of the functionality.
 
@@ -93,7 +93,7 @@ view to routes using the normal decorator syntax.
 **recipes** - create, show, delete recipe functionality. Also adding ingredients
 from recipes to shopping list. And also cook recipe for deleting ingredients from products
 
-**shopping_list** - create shopping list and add ingredients to products. 
+**shopping_list** - create shopping list and add ingredients to products.
 
 ## To do functional
 
@@ -101,6 +101,8 @@ from recipes to shopping list. And also cook recipe for deleting ingredients fro
 - Save shopping list
 - Repeat shopping list
 - Find recipe to cook from existed products
+- Converting units
+- Add photo to recipe and steps
 
 ## Built With
 

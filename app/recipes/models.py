@@ -30,7 +30,6 @@ def get_product_id_by_name(user_id, name):
 def add_ingredients_to_recipe(id_recipe, id_product, quantity, units):
     rows = db.execute("INSERT INTO recipe_to_product (id_recipe,id_product,quantity,units) VALUES\
         		(:id_recipe, :id_product,:quantity,:units)", id_recipe=id_recipe, id_product=id_product, quantity=quantity, units=units)
-
     return rows
 
 
@@ -73,4 +72,12 @@ def update_sql_products(user_id, quantity, id):
         user_id=user_id, quantity=quantity, id=id)
 
     rows = db.execute(sql_request)
+    return rows
+
+
+# create product
+def create_sql_product(user_id, name, units, quantity, category):
+    rows = db.execute("INSERT INTO products (id,name,units,quantity,user_id,category) VALUES\
+    			(NULL,:name,:units, :quantity,:user_id,:category)", name=name, units=units, quantity=quantity, user_id=user_id, category=category)
+
     return rows

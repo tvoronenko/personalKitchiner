@@ -11,8 +11,6 @@ import json
 # register this view
 mod = Blueprint('shopping_list', __name__)
 
-from app import UnitsType,CategoryTypeProduct,CategoryRecipes
-
 
 # load shopping_list page
 @app.route("/shopping_list")
@@ -32,8 +30,7 @@ def get_shopping_list():
             # get  all ingredoents for all recipes
             need_for_recipes = get_ingrediets_to_recipes(ids)
         except (RuntimeError, ValueError):
-            response = jsonify({'status': 'Shopping list cannot be created'})
-            response.status = 404
+            response = jsonify({'status': 'Shopping list cannot be created'}, 404)
             return response
 
         # get  id of ingredients in flat list
@@ -45,8 +42,7 @@ def get_shopping_list():
             # get quantity products in storage
             products = get_details_about_products(session["user_id"], ids)
         except (RuntimeError, ValueError):
-            response = jsonify({'status': 'Shopping list cannot be created'})
-            response.status = 404
+            response = jsonify({'status': 'Shopping list cannot be created'}, 404)
             return response
         product_dict = {}
         for product in products:

@@ -5,8 +5,10 @@
 {% endblock %}
 
 {% block main %}
+<h3>List of recipes</h3>
 <br>
    <table id="data" class="table table-striped table-bordered">
+
         <thead>
             <tr>
                 <th>Selected</th>
@@ -32,7 +34,7 @@
             <div class="modal-body">
                     <div class="form-group">
                         <label class="control-label">Name</label>
-    
+
                             <input id="recipetName1" type="text" class="form-control input-lg" name="name"  readonly>
 
                     </div>
@@ -80,8 +82,8 @@
                        <label class="control-label">Category</label>
                         <select class="form-control selectpicker" data-live-search="true"  data-width="195px" data-size="5" id="recipeCategory" name="category" required>
                             <option disabled selected value>Category</option>
-                            {% for category in categories %}
-                                <option value="{{ category.name }}">{{ category.name }}</option>
+                            {% for category in categories.values() %}
+                                <option value="{{ category }}">{{ category }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -101,8 +103,8 @@
                         <input id="quantityIngred" type="number" class="form-control input-lg" name="quantityIngred" value=1 min=1 required>
                         <select class="form-control selectpicker" data-live-search="true"  data-width="100px" data-size="5" id="unitsIngred" name="unitsIngred" required>
                             <option disabled selected value>Units</option>
-                            {% for unit in units %}
-                                <option value="{{ unit.name }}">{{ unit.name }}</option>
+                            {% for unit in units.values() %}
+                                <option value="{{ unit }}">{{ unit }}</option>
                             {% endfor %}
                         </select>
 
@@ -119,7 +121,7 @@
                     <div class="form-group">
                         <div>
                             <button id="addRecipe" class='dt-button' type="submit">Add</button>
-                            <button type="button" class='dt-button' data-dismiss="modal">Close</button>
+                            <button type="button" class='dt-button' id="close" data-dismiss="modal">Close</button>
                         </div>
                     </div>
                 <!--</form>-->
@@ -195,12 +197,12 @@
                 extend:    'pdf',
                 text:      '<i class="far fa-file-pdf"></i>',
                 titleAttr: 'Convert to PDF'
-            }, 
+            },
             {
                 extend:    'excel',
                 text:      '<i class="far fa-file-excel"></i>',
                 titleAttr: 'Convert to excle'
-            }, 
+            },
             {
                 extend:    'print',
                 text:      '<i class="fas fa-print"></i>',
@@ -265,9 +267,9 @@
 
                     };
                     $('#ingredients1').val(ing);
-  
+
                   }
-                  
+
 
                 });
             },
@@ -322,7 +324,7 @@
         while (parent.firstChild) {
             parent.removeChild(parent.firstChild);
         }
-        // show in div already added ingredients and generate new input 
+        // show in div already added ingredients and generate new input
         for(i=0;i<recipe.ingredients.length;i++){
             var ingredient={};
             ingredient.product = recipe.ingredients[i].product;
@@ -371,6 +373,25 @@
 
     $(document).ready(function () {
         table = drawTable();
+        $('#close').click( function (){
+
+                $('#productIngred').val('').end(); // Clear dropdown content
+                $('#productIngred').selectpicker('refresh');
+                $('#unitsIngred').val('').end(); // Clear dropdown content
+                $('#unitsIngred').selectpicker('refresh');
+                $('#recipeCategory').val('').end(); // Clear dropdown content
+                $('#recipeCategory').selectpicker('refresh');
+                $('#recipetName').val("Name");
+                $('#quantityIngred').val(1);
+                $('#description').val("");
+
+               recipe.ingredients = [];
+               var parent = document.querySelector('#existingIngredients')
+                while (parent.firstChild) {
+                    parent.removeChild(parent.firstChild);
+                };
+         });
+
         // send delete request
         $('#delete').click( function () {
             if (deleteRequest() === "[]")
@@ -451,7 +472,7 @@
                 });
             return false;
             }
-            
+
             if ($('#recipeCategory')[0].selectedOptions[0].value == "")
             {
             $.toaster("Please select category", {
@@ -475,10 +496,20 @@
                     return;
                 }
                 $('#ModalAddForm').on('hidden.bs.modal', function () {
-                $(this).find("select").val('').end(); // Clear dropdown content
+                $('#productIngred').val('').end(); // Clear dropdown content
+                $('#productIngred').selectpicker('refresh');
+                $('#unitsIngred').val('').end(); // Clear dropdown content
+                $('#unitsIngred').selectpicker('refresh');
+                $('#recipeCategory').val('').end(); // Clear dropdown content
+                $('#recipeCategory').selectpicker('refresh');
                 $('#recipetName').val("Name");
                 $('#quantityIngred').val(1);
                 $('#description').val("");
+                recipe.ingredients = [];
+               var parent = document.querySelector('#existingIngredients')
+                while (parent.firstChild) {
+                    parent.removeChild(parent.firstChild);
+                };
                 });
 
                 $('#ModalAddForm').modal('hide')
@@ -486,18 +517,18 @@
                 $.toaster('Succesfully added', {
                     text:'Message'
                     });
-        
+
             }).then((data) => {
-                
-                
+
+
                 }).catch (() => {
                     $.toaster('Cannot be added', {
                     text:'Error'
                     })});
         });
-        //send request to add ingredient to shopping list minus existed product 
+        //send request to add ingredient to shopping list minus existed product
         $("#addToList").click(function(){
-            
+
             var toAdd = [];
               $.each($("input[class='checkbox']:checked"), function(){
                 toAdd.push(this.id);
@@ -520,7 +551,7 @@
                 });
             return false;
             }
-            
+
             if ($('#productIngred')[0].selectedOptions[0].value == "")
             {
             $.toaster("Please select product", {
@@ -551,8 +582,10 @@
 
             showIngrediends();
             $('#quantityIngred').val(1);
-            $('#productIngred').val('')
-            $('#unitsIngred').val('')
+            $('#productIngred').val('').end(); // Clear dropdown content
+            $('#productIngred').selectpicker('refresh');
+            $('#unitsIngred').val('').end(); // Clear dropdown content
+            $('#unitsIngred').selectpicker('refresh');
         });
       });
   </script>

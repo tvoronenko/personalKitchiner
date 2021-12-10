@@ -1,6 +1,7 @@
 from tests.test_main import BaseTestCase
 from flask import request, session
 
+
 class UserViewsTests(BaseTestCase):
 
     def login(self, username, password):

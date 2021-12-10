@@ -6,6 +6,7 @@
 
 {% block main %}
 <!-- Generate table -->
+<h3>List of product stored in kitchen</h3>
 <br>
    <table id="data" class="table table-striped table-bordered">
         <thead>
@@ -39,8 +40,8 @@
                        <label class="control-label">Category</label>
                         <select class="form-control selectpicker" data-live-search="true"  data-width="195px" data-size="5" id="productCategory" name="category" >
                             <option disabled selected value>Category</option>
-                            {% for category in categories %}
-                                <option value="{{ category.name }}">{{ category.name }}</option>
+                            {% for category in categories.values() %}
+                                <option value="{{ category }}">{{ category }}</option>
                             {% endfor %}
                         </select>
                     </div>
@@ -52,15 +53,15 @@
                         <label class="control-label">Units</label>
                         <select class="form-control selectpicker" data-live-search="true" data-width="230px" data-size="5" id="productUnits" name="units">
                             <option disabled selected value>Units</option>
-                            {% for unit in units %}
-                                <option value="{{ unit.name }}">{{ unit.name  }}</option>
+                            {% for unit in units.values() %}
+                                <option value="{{ unit}}">{{ unit  }}</option>
                             {% endfor %}
                         </select>
                     </div>
                     <div class="form-group">
                         <div>
                             <button id="addProduct" class='dt-button' type="submit">Add</button>
-                            <button type="button" class='dt-button' data-dismiss="modal">Close</button>
+                            <button type="button" class='dt-button'  id="close" data-dismiss="modal">Close</button>
                         </div>
                     </div>
                 <!--</form>-->
@@ -126,18 +127,18 @@
             {
                 extend:    'delete',
                 text:      '<i class="fas fa-minus"></i>',
-                titleAttr: 'Delete products'
+                titleAttr: 'Set quantity of products to 0'
             },
             {
                 extend:    'pdf',
                 text:      '<i class="far fa-file-pdf"></i>',
                 titleAttr: 'Convert to PDF'
-            }, 
+            },
             {
                 extend:    'excel',
                 text:      '<i class="far fa-file-excel"></i>',
                 titleAttr: 'Convert to excle'
-            }, 
+            },
             {
                 extend:    'print',
                 text:      '<i class="fas fa-print"></i>',
@@ -248,7 +249,14 @@
               console.log('Request failed', error)
             });
         });
-
+         $('#close').click( function (){
+                $('#productUnits').val('').end(); // Clear dropdown content
+                $('#productUnits').selectpicker('refresh');
+                $('#productCategory').val('').end(); // Clear dropdown content
+                $('#productCategory').selectpicker('refresh');
+                $('#productName').val("Name");
+                $('#productQuantity').val(1);
+        });
         // function to add product
          $('#addProduct').click( function (){
           var newProduct = {};
@@ -304,7 +312,10 @@
                     return;
                 }
                 $('#ModalAddForm').on('hidden.bs.modal', function () {
-                $(this).find("select").val('').end(); // Clear dropdown content
+                $('#productUnits').val('').end(); // Clear dropdown content
+                $('#productUnits').selectpicker('refresh');
+                $('#productCategory').val('').end(); // Clear dropdown content
+                $('#productCategory').selectpicker('refresh');
                 $('#productName').val("Name");
                 $('#productQuantity').val(1);
                 });
@@ -314,10 +325,10 @@
                 $.toaster('Succesfully added', {
                     text:'Message'
                     });
-        
+
             }).then((data) => {
-                
-                
+
+
                 }).catch (() => {
                     $.toaster('Cannot be added', {
                     text:'Error'

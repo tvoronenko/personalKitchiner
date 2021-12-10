@@ -1,5 +1,5 @@
 import os
-import enum
+
 from flask import Blueprint
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session, jsonify
@@ -10,55 +10,10 @@ from werkzeug.exceptions import default_exceptions, HTTPException, InternalServe
 import json
 from app.helpers import apology, login_required
 
-class CategoryProduct(enum.Enum):
-    vegetable = 1
-    milk = 2
-    meat = 3
-    spice = 4
-    fruits = 5
-
-
-CategoryTypeProduct = {}
-CategoryTypeProduct[CategoryProduct.vegetable] = "vegetable"
-CategoryTypeProduct[CategoryProduct.milk] = "milk product"
-CategoryTypeProduct[CategoryProduct.meat] = "meat"
-CategoryTypeProduct[CategoryProduct.spice] = "spice"
-CategoryTypeProduct[CategoryProduct.fruits] = "fruits"
-
-
-class CategoryRecipes(enum.Enum):
-    breaskfast = 1
-    lunch = 2
-    dinner = 3
-    brunch = 4
-    appetizer = 5
-    salad = 6
-
-
-CategoryTypeRecipes = {}
-CategoryTypeRecipes[CategoryRecipes.breaskfast] = "breaskfast"
-CategoryTypeRecipes[CategoryRecipes.lunch] = "lunch"
-CategoryTypeRecipes[CategoryRecipes.dinner] = "dinner"
-CategoryTypeRecipes[CategoryRecipes.brunch] = "brunch"
-CategoryTypeRecipes[CategoryRecipes.appetizer] = "appetizer"
-CategoryTypeRecipes[CategoryRecipes.salad] = "salad"
-
-
-class Units(enum.Enum):
-    oz = 1
-    tsp = 2
-    tbsp = 3
-    ea = 4
-
-
-UnitsType = {}
-UnitsType[Units.ea] = "ea"
-UnitsType[Units.tsp] = "tsp"
-UnitsType[Units.tbsp] = "tbsp"
-UnitsType[Units.ea] = "ea"
 
 # Configure application
 app = Flask(__name__)
+
 
 # Ensure responses aren't cached
 @app.after_request

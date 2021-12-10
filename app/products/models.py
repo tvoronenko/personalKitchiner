@@ -12,7 +12,7 @@ def create_sql_product(user_id, name, units, quantity, category):
 # get all produts
 def get_all_products(user_id):
     products = db.execute("SELECT products.id , products.name, products.category, products.quantity, products.units FROM products \
-        					where products.user_id = :user_id and products.quantity > 0", user_id=user_id)
+        					where products.user_id = :user_id", user_id=user_id)
 
     return products
 

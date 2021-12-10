@@ -1,9 +1,45 @@
-import os
-import requests
-import urllib.parse
-
+import enum
 from flask import redirect, render_template, request, session
 from functools import wraps
+
+
+def load_type_product():
+    import csv
+
+    filename = "category_products.csv"
+    category = {}
+    # opening the file using "with"
+    # statement
+    with open(filename, 'r') as data:
+        for line in csv.DictReader(data):
+            category[line["key"]] = line["value"]
+    return category
+
+
+def load_units():
+    import csv
+
+    filename = "units.csv"
+    units = {}
+    # opening the file using "with"
+    # statement
+    with open(filename, 'r') as data:
+        for line in csv.DictReader(data):
+            units[line["key"]] = line["value"]
+    return units
+
+
+def load_type_recipe():
+    import csv
+
+    filename = "category_recipes.csv"
+    category = {}
+    # opening the file using "with"
+    # statement
+    with open(filename, 'r') as data:
+        for line in csv.DictReader(data):
+            category[line["key"]] = line["value"]
+    return category
 
 
 def apology(message, code=400):

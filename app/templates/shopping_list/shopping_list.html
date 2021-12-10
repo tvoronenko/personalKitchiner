@@ -5,9 +5,10 @@
 {% endblock %}
 
 {% block main %}
-
+<h3>Generated shopping list</h3>
 <br>
    <table id="data" class="table table-striped table-bordered">
+
         <thead>
             <tr>
                 <th>Selected</th>
@@ -40,13 +41,13 @@
       var table = $('#data')
       .on('xhr.dt', function ( e, settings, json, xhr ) {
         var data = json.data;
-        if (data.length === 0) 
+        if (data.length === 0)
         {
           $.toaster('Nothing to buy. You have all ingredients.', {
                   text:'Message'
                 })
-        } 
-        
+        }
+
       } )
       .DataTable({
           "ordering": false,
@@ -56,7 +57,7 @@
               data:{
                   ids:params
               },
-              
+
           },
         columns: [
           {data: null,  render: function ( data, type, row, meta ) {
@@ -73,12 +74,12 @@
                 extend:    'pdf',
                 text:      '<i class="far fa-file-pdf"></i>',
                 titleAttr: 'Convert to PDF'
-            }, 
+            },
             {
                 extend:    'excel',
                 text:      '<i class="far fa-file-excel"></i>',
                 titleAttr: 'Convert to excle'
-            }, 
+            },
             {
                 extend:    'print',
                 text:      '<i class="fas fa-print"></i>',
@@ -92,7 +93,7 @@
         ],
 
       });
-      
+
       table.columns( [1] ).visible( false );
       return table;
     }
@@ -102,7 +103,7 @@
         text: 'Add purchased products',
         action: function ( e, dt, node, config ) {
             fetch('/api/products', {
-          method: 'PUT',
+          method: 'POST',
           body: AddRequest(),
           headers: {
             'Content-Type': 'application/json'
@@ -131,7 +132,7 @@
     $(document).ready(function () {
 
       table = drawTable(params);
-     
+
      AddRequest = function (){
           var toUpdate = [];
           $.each($('#data').DataTable().rows().data(), function(){

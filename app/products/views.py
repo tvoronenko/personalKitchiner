@@ -3,35 +3,32 @@ from flask import Flask, flash, redirect, render_template, request, session, jso
 from flask_session import Session
 from app.products.models import *
 from app import app, db
-from app.helpers import apology, login_required
+from app.helpers import apology, login_required, load_units, load_type_product
 from werkzeug.security import check_password_hash, generate_password_hash
 import json
 
 mod = Blueprint('products', __name__)
-
-from app import UnitsType,CategoryTypeProduct
 
 
 # retrive product.html and home page
 @app.route("/")
 @login_required
 def index():
-    return render_template("/products/products.html", categories=CategoryTypeProduct, units=UnitsType)
+    return render_template("/products/products.html", categories=load_type_product(), units=load_units())
 
 
 # api to create product
 @app.route('/api/products', methods=["PUT"])
 def create_products():
     record = json.loads(request.data)
+    print(record)
 
     try:
         res = create_sql_product(session["user_id"], record["name"], record["units"], record["quantity"], record["category"])
     except (RuntimeError, ValueError):
-        response = jsonify({'status': 'Cannot be added'})
-        response.status = 400
+        response = jsonify({'status': 'Cannot be added'}, 404)
         return response
-    response = jsonify({'status': 'Ok'})
-    response.status = 200
+    response = jsonify({'status': 'Ok'}, 200)
     return response
 
 
@@ -42,15 +39,12 @@ def delete_products():
         rows = delete_sql_products(session["user_id"], json.loads(request.data))
 
         if rows != len(json.loads(request.data)):
-            response = jsonify({'status': 'Some products cannot be deleted'})
-            response.status = 404
+            response = jsonify({'status': 'Some products cannot be deleted'}, 404)
             return response
     except (RuntimeError, ValueError):
-        response = jsonify({'status': 'Cannot be deleted'})
-        response.status = 404
+        response = jsonify({'status': 'Cannot be deleted'}, 404)
         return response
-    response = jsonify({'status': 'Ok'})
-    response.status_code = 200
+    response = jsonify({'status': 'Ok'}, 200)
     return response
 
 
@@ -65,16 +59,13 @@ def update_products():
             try:
                 rows = update_sql_products(type_request, session["user_id"], record["quantity"], record["id"])
                 if rows != 1:
-                    response = jsonify({'status': 'Some products cannot be updated'})
-                    response.status = 404
+                    response = jsonify({'status': 'Some products cannot be updated'}, 404)
                     return response
             except (RuntimeError, ValueError):
-                response = jsonify({'status': 'Cannot be updated'})
-                response.status = 404
+                response = jsonify({'status': 'Cannot be updated'}, 404)
                 return response
 
-    response = jsonify({'status': 'Ok'})
-    response.status = 200
+    response = jsonify({'status': 'Ok'}, 200)
     return response
 
 
@@ -85,8 +76,7 @@ def get_products():
         try:
             products = get_all_products(session["user_id"])
         except (RuntimeError, ValueError):
-            response = jsonify({'status': 'Products cannot be shown'})
-            response.status = 400
+            response = jsonify({'status': 'Products cannot be shown'}, 400)
             return response
         return {'data': [product for product in products]}
 
